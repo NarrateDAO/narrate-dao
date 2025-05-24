@@ -1,15 +1,44 @@
 # NarrateDAO OS
 
-## 引言
+## Introduction
 
-### 1.1 项目概览
+NarrateDAO aims to be the indispensable open-source governance operating system (OS) for the Web3 space. It provides stable, secure, and scalable primitives for social-first DAO governance. The success of NarrateDAO will be measured by the adoption of its core infrastructure by other developers and projects building diverse applications and user interfaces on top of it. The core idea is to focus on providing a rock-solid and scalable core, enabling the community to build applications on top, similar to how Ethereum provides the base blockchain and countless dApps flourish on it.
 
-NarrateDAO 旨在成为 Web3 领域不可或缺的开源治理操作系统 (OS)。它为社交优先的 DAO 治理提供稳定、安全和可扩展的原语。NarrateDAO 的成功将通过其他开发者和项目对其核心基础设施的采纳来衡量，他们将在其之上构建多样化的应用程序和用户界面。核心理念是专注于提供坚如磐石且可扩展的核心，让社区在其之上构建应用，类似于以太坊提供基础区块链，无数 dApp 在其上繁荣。
+## Project Overview
 
-### 1.2 文档目的
+This document details the software architecture for the Minimum Viable Product (MVP) of NarrateDAO. It serves as a foundation for the development team to build and iterate on the product and provides guidance for community contributors to understand the system design and participate in development.
 
-本文档旨在详细描述 NarrateDAO 最小可行产品 (MVP) 的软件架构。它将作为开发团队构建和迭代产品的基础，并为社区贡献者提供理解系统设计和参与开发的指导。
+## Scope (MVP)
 
-### 1.3 范围 (MVP)
+The scope of this document focuses on the backend OS components required for the "minimal core" MVP of NarrateDAO. This includes the core data ingestion and transformation layer, minimal trust voting primitives, and the developer APIs supporting these functionalities. Frontend UI components (such as Farcaster Frames or Web UI libraries), while crucial parts of the ecosystem, are outside the detailed design scope of this core backend architecture document and will be treated as example applications built on the APIs described herein.
 
-本文档的范围聚焦于 NarrateDAO 的"最小核心" MVP 所需的后端操作系统组件。这包括核心数据摄取与转换层、最小信任投票原语以及支持这些功能的开发者 API。前端 UI 组件 (如 Farcaster Frames 或 Web UI 库) 虽然是生态系统的重要组成部分，但其详细设计超出了此核心后端架构文档的范围，它们将被视为构建在本文档所述 API 之上的示例应用程序。 
+## Architecture Goals and Principles
+
+### Architecture Goals
+
+- **Stability & Reliability:** Provide a highly available core system to ensure uninterrupted governance processes.
+- **Security:** Prioritize secure design to protect user data and the integrity of governance operations.
+- **Scalability:** Design components with both horizontal and vertical scaling capabilities to accommodate future growth in users and data volume.
+- **Extensibility (Functionality):** Core primitives should be easily extensible and customizable by other developers.
+- **Developer Experience:** Offer clear APIs, good documentation, and tools to facilitate integration and building.
+- **Data Integrity & Auditability:** Ensure all governance-related data is traceable, tamper-proof, and easily auditable.
+
+### Design Principles
+
+- **Modularity:** The system consists of loosely coupled, functionally independent modules for easy independent development, testing, deployment, and upgrades.
+- **Service-orientation:** Core functionalities are exposed as services via clearly defined APIs.
+- **Minimal Trust:** Minimize reliance on centralized components in the design of voting and execution mechanisms.
+- **Openness & Interoperability:** Adopt open standards for easy integration with other Web3 protocols and tools.
+- **Progressive Decentralization:** While the MVP may rely on certain centralized components (e.g., OpenAI API), the long-term goal is to evolve towards more decentralized alternatives.
+
+## Getting Started
+
+(Instructions on how to set up the project locally will be added here later, including cloning, installing dependencies, and running development servers.)
+
+## Contributing
+
+(Information on how to contribute to the project will be added here later, including guidelines for submitting issues and pull requests.)
+
+## License
+
+(License information will be added here later.) 
