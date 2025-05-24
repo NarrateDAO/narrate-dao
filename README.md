@@ -1,44 +1,40 @@
-# NarrateDAO OS
+# NarrateDAO
 
-## Introduction
+NarrateDAO 是面向 Web3 时代的开源治理操作系统（OS），专注于为社交优先的 DAO 提供稳定、安全、可扩展的治理基础设施。其目标是成为开发者和团队构建多样化治理应用的首选底层平台。
 
-NarrateDAO aims to be the indispensable open-source governance operating system (OS) for the Web3 space. It provides stable, secure, and scalable primitives for social-first DAO governance. The success of NarrateDAO will be measured by the adoption of its core infrastructure by other developers and projects building diverse applications and user interfaces on top of it. The core idea is to focus on providing a rock-solid and scalable core, enabling the community to build applications on top, similar to how Ethereum provides the base blockchain and countless dApps flourish on it.
+## 核心功能
+- **数据管道**：高效采集 Farcaster、链上等多源治理数据
+- **AI 驱动意图解析**：将自然语言治理意图转为结构化提案
+- **最小信任投票原语**：链下签名投票、加权机制、ZK 身份验证
+- **可扩展 API & SDK**：便于开发者集成和二次开发
+- **开源 UI 组件**：Farcaster Frames、React/Next.js 组件库
 
-## Project Overview
+## 架构亮点
+- 模块化设计，前后端解耦，易于扩展和贡献
+- 数据完整性与隐私保护：IPFS/区块链哈希、ZK-SNARKs
+- 支持链上与链下治理流程无缝衔接
+- 丰富的开发者文档与用例食谱
 
-This document details the software architecture for the Minimum Viable Product (MVP) of NarrateDAO. It serves as a foundation for the development team to build and iterate on the product and provides guidance for community contributors to understand the system design and participate in development.
+## 快速开始
+1. 克隆仓库并安装依赖
+2. 配置环境变量（API 密钥、数据库等）
+3. 启动后端服务与前端 UI
+4. 参考 `docs/NarrateDAO-Architecture.md` 了解详细架构与集成方式
 
-## Scope (MVP)
+## 目录结构
+- `docs/`：项目文档与架构说明
+- `src/`：核心后端与前端代码（数据采集、AI 处理、投票逻辑、UI 组件等）
+- `scripts/`：部署与运维脚本
 
-The scope of this document focuses on the backend OS components required for the "minimal core" MVP of NarrateDAO. This includes the core data ingestion and transformation layer, minimal trust voting primitives, and the developer APIs supporting these functionalities. Frontend UI components (such as Farcaster Frames or Web UI libraries), while crucial parts of the ecosystem, are outside the detailed design scope of this core backend architecture document and will be treated as example applications built on the APIs described herein.
+## 社区与贡献
+- 欢迎通过 Issue、PR 参与核心模块、UI 组件、文档等贡献
+- 加入社区讨论，参与治理与产品路线共建
+- 详细贡献指南见 `CONTRIBUTING.md`
 
-## Architecture Goals and Principles
+## 联系与支持
+- 官方网站：[待补充]
+- 社区 Discord：[待补充]
+- 邮箱：[待补充]
 
-### Architecture Goals
-
-- **Stability & Reliability:** Provide a highly available core system to ensure uninterrupted governance processes.
-- **Security:** Prioritize secure design to protect user data and the integrity of governance operations.
-- **Scalability:** Design components with both horizontal and vertical scaling capabilities to accommodate future growth in users and data volume.
-- **Extensibility (Functionality):** Core primitives should be easily extensible and customizable by other developers.
-- **Developer Experience:** Offer clear APIs, good documentation, and tools to facilitate integration and building.
-- **Data Integrity & Auditability:** Ensure all governance-related data is traceable, tamper-proof, and easily auditable.
-
-### Design Principles
-
-- **Modularity:** The system consists of loosely coupled, functionally independent modules for easy independent development, testing, deployment, and upgrades.
-- **Service-orientation:** Core functionalities are exposed as services via clearly defined APIs.
-- **Minimal Trust:** Minimize reliance on centralized components in the design of voting and execution mechanisms.
-- **Openness & Interoperability:** Adopt open standards for easy integration with other Web3 protocols and tools.
-- **Progressive Decentralization:** While the MVP may rely on certain centralized components (e.g., OpenAI API), the long-term goal is to evolve towards more decentralized alternatives.
-
-## Getting Started
-
-(Instructions on how to set up the project locally will be added here later, including cloning, installing dependencies, and running development servers.)
-
-## Contributing
-
-(Information on how to contribute to the project will be added here later, including guidelines for submitting issues and pull requests.)
-
-## License
-
-(License information will be added here later.) 
+---
+NarrateDAO —— Web3 治理的最小核心，开放、可扩展、值得信赖。 
