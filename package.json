@@ -1,12 +1,44 @@
 {
-  "name": "narrate-dao-os",
-  "version": "1.0.0",
-  "description": "Core backend OS for NarrateDAO",
-  "private": true,
+  "name": "narrate-dao",
+  "version": "0.1.0",
+  "description": "NarrateDAO: 最小信任的去中心化投票解决方案",
+  "main": "src/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "test": "jest",
+    "lint": "eslint ."
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC"
-} 
+  "keywords": [
+    "dao",
+    "voting",
+    "blockchain",
+    "web3",
+    "decentralized"
+  ],
+  "author": "NarrateDAO Team",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.9.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "ethers": "^5.7.2",
+    "express": "^4.18.2",
+    "express-validator": "^7.2.1",
+    "helmet": "^6.0.1",
+    "ipfs-http-client": "^56.0.3",
+    "joi": "^17.8.3",
+    "mongoose": "^7.0.1",
+    "morgan": "^1.10.0",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
+    "winston": "^3.8.2",
+    "yamljs": "^0.3.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.35.0",
+    "jest": "^29.5.0",
+    "nodemon": "^2.0.21",
+    "supertest": "^6.3.3"
+  }
+}

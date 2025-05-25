@@ -1,0 +1,1332 @@
+openapi: 3.0.0
+info:
+  title: NarrateDAO API
+  version: 0.1.0
+  description: 最小信任的去中心化投票解决方案 API
+  contact:
+    name: NarrateDAO Team
+    url: https://github.com/NarrateDAO/narrate-dao
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:3000
+    description: 开发环境
+  - url: https://api.narratedao.com
+    description: 生产环境
+
+tags:
+  - name: 投票
+    description: 投票相关操作
+  - name: 提案
+    description: 提案相关操作
+  - name: 权重服务
+    description: 投票权重计算服务
+  - name: 审计服务
+    description: 审计日志服务
+  - name: 执行服务
+    description: 链上执行服务
+  - name: ZK服务
+    description: 零知识证明服务
+
+paths:
+  /api/v1/votes:
+    post:
+      summary: 提交投票
+      description: 提交一个新的投票到指定提案
+      tags:
+        - 投票
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - voter
+                - proposalId
+                - choice
+                - signature
+                - space
+              properties:
+                voter:
+                  type: string
+                  description: 投票者的以太坊地址
+                  example: "0x1234567890123456789012345678901234567890"
+                proposalId:
+                  type: string
+                  description: 提案ID
+                  example: "prop-1"
+                choice:
+                  oneOf:
+                    - type: integer
+                      description: 选择的选项索引（单选）
+                      example: 1
+                    - type: array
+                      items:
+                        type: integer
+                      description: 选择的选项索引数组（多选）
+                      example: [1, 3]
+                    - type: object
+                      description: 选项权重映射（加权投票）
+                      example: {"1": 0.7, "2": 0.3}
+                signature:
+                  type: string
+                  description: EIP-712签名
+                  example: "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+                space:
+                  type: string
+                  description: DAO空间标识符
+                  example: "my-dao"
+                timestamp:
+                  type: integer
+                  description: 投票时间戳（可选，默认为当前时间）
+                  example: 1677854106
+      responses:
+        201:
+          description: 投票成功提交
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        400:
+          description: 请求验证失败
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: 服务器内部错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v1/votes/{proposalId}:
+    get:
+      summary: 获取提案的所有投票
+      description: 查询特定提案的所有投票记录
+      tags:
+        - 投票
+      parameters:
+        - in: path
+          name: proposalId
+          required: true
+          schema:
+            type: string
+          description: 提案ID
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 100
+          description: 返回记录数量限制
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            default: 0
+          description: 分页偏移量
+        - in: query
+          name: sort
+          schema:
+            type: string
+            default: timestamp
+          description: 排序字段
+        - in: query
+          name: order
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+          description: 排序方向
+      responses:
+        200:
+          description: 成功返回投票列表
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        400:
+          description: 请求验证失败
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: 服务器内部错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v1/votes/voter/{address}:
+    get:
+      summary: 获取用户的所有投票
+      description: 查询特定用户的所有投票记录
+      tags:
+        - 投票
+      parameters:
+        - in: path
+          name: address
+          required: true
+          schema:
+            type: string
+          description: 用户的以太坊地址
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 100
+          description: 返回记录数量限制
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            default: 0
+          description: 分页偏移量
+      responses:
+        200:
+          description: 成功返回投票列表
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        400:
+          description: 请求验证失败
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: 服务器内部错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v1/votes/{proposalId}/results:
+    get:
+      summary: 获取提案的投票结果
+      description: 查询特定提案的投票结果统计
+      tags:
+        - 投票
+      parameters:
+        - in: path
+          name: proposalId
+          required: true
+          schema:
+            type: string
+          description: 提案ID
+      responses:
+        200:
+          description: 成功返回投票结果
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        400:
+          description: 请求验证失败
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: 服务器内部错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v1/votes/{proposalId}/{voter}:
+    get:
+      summary: 获取特定用户对特定提案的投票
+      description: 查询用户对特定提案的投票记录
+      tags:
+        - 投票
+      parameters:
+        - in: path
+          name: proposalId
+          required: true
+          schema:
+            type: string
+          description: 提案ID
+        - in: path
+          name: voter
+          required: true
+          schema:
+            type: string
+          description: 投票者的以太坊地址
+      responses:
+        200:
+          description: 成功返回投票记录
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        404:
+          description: 投票记录不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: 服务器内部错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+    delete:
+      summary: 取消投票
+      description: 取消用户对特定提案的投票（如果提案仍在进行中且发送者是投票者）
+      tags:
+        - 投票
+      security:
+        - web3Signature: []
+      parameters:
+        - in: path
+          name: proposalId
+          required: true
+          schema:
+            type: string
+          description: 提案ID
+        - in: path
+          name: voter
+          required: true
+          schema:
+            type: string
+          description: 投票者的以太坊地址
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - signature
+              properties:
+                signature:
+                  type: string
+                  description: 投票者的签名，用于验证身份
+      responses:
+        200:
+          description: 成功取消投票
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        400:
+          description: 请求验证失败或提案已结束
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        401:
+          description: 签名验证失败
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: 投票记录不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: 服务器内部错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v1/votes/verify:
+    post:
+      summary: 验证投票签名
+      description: 验证投票签名是否有效
+      tags:
+        - 投票
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - message
+                - signature
+              properties:
+                message:
+                  type: object
+                  description: 被签名的原始消息
+                signature:
+                  type: string
+                  description: EIP-712签名
+      responses:
+        200:
+          description: 成功验证签名
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        400:
+          description: 请求验证失败
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: 服务器内部错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # 提案相关接口
+  /api/v1/proposals:
+    post:
+      summary: 创建提案
+      description: 创建一个新的提案
+      tags:
+        - 提案
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProposalRequest'
+      responses:
+        201:
+          description: 提案创建成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        400:
+          description: 请求验证失败
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: 服务器内部错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+    get:
+      summary: 获取提案列表
+      description: 查询提案列表，可按条件筛选
+      tags:
+        - 提案
+      parameters:
+        - in: query
+          name: space
+          schema:
+            type: string
+          description: 按DAO空间筛选
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [all, pending, active, closed, canceled]
+          description: 按状态筛选
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 20
+          description: 返回记录数量限制
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            default: 0
+          description: 分页偏移量
+        - in: query
+          name: sort
+          schema:
+            type: string
+            enum: [created, start, end]
+            default: created
+          description: 排序字段
+        - in: query
+          name: order
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+          description: 排序方向
+      responses:
+        200:
+          description: 成功返回提案列表
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        400:
+          description: 请求验证失败
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: 服务器内部错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ZK服务接口
+  /api/v1/zk/circuits:
+    get:
+      summary: 获取可用的ZK电路列表
+      description: 返回系统支持的所有ZK电路
+      tags:
+        - ZK服务
+      responses:
+        200:
+          description: 成功返回电路列表
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        500:
+          description: 服务器内部错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v1/zk/verify:
+    post:
+      summary: 验证ZK证明
+      description: 验证零知识证明是否有效
+      tags:
+        - ZK服务
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Proof'
+      responses:
+        200:
+          description: 成功验证证明
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        400:
+          description: 请求验证失败
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: 服务器内部错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # 权重服务接口
+  /api/v1/weights/calculate:
+    post:
+      summary: 计算用户投票权重
+      description: 根据提供的策略计算特定用户的投票权重
+      tags:
+        - 权重服务
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - voterAddress
+                - strategies
+              properties:
+                voterAddress:
+                  type: string
+                  description: 投票者的以太坊地址
+                  example: "0x1234567890123456789012345678901234567890"
+                strategies:
+                  type: array
+                  description: 权重计算策略数组
+                  items:
+                    type: object
+                    required:
+                      - type
+                      - params
+                    properties:
+                      type:
+                        type: string
+                        enum: [erc20-balance-of, erc721-balance-of, fixed-weight]
+                        description: 策略类型
+                      params:
+                        type: object
+                        description: 策略参数
+                blockNumber:
+                  type: integer
+                  description: 区块高度（可选，默认为最新区块）
+                  example: 15000000
+      responses:
+        200:
+          description: 成功计算权重
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        400:
+          description: 请求验证失败
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: 服务器内部错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v1/weights/strategies:
+    get:
+      summary: 获取可用的权重计算策略
+      description: 返回系统支持的所有权重计算策略类型
+      tags:
+        - 权重服务
+      responses:
+        200:
+          description: 成功返回策略列表
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        500:
+          description: 服务器内部错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+                
+  /api/v1/weights/erc20/{tokenAddress}/{voterAddress}:
+    get:
+      summary: 获取ERC20代币余额
+      description: 查询特定用户的ERC20代币余额
+      tags:
+        - 权重服务
+      parameters:
+        - in: path
+          name: tokenAddress
+          required: true
+          schema:
+            type: string
+          description: ERC20代币合约地址
+        - in: path
+          name: voterAddress
+          required: true
+          schema:
+            type: string
+          description: 用户地址
+        - in: query
+          name: blockNumber
+          schema:
+            type: integer
+          description: 区块高度（可选，默认为最新区块）
+      responses:
+        200:
+          description: 成功返回代币余额
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        400:
+          description: 请求验证失败
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: 服务器内部错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+                
+  /api/v1/weights/erc721/{tokenAddress}/{voterAddress}:
+    get:
+      summary: 获取ERC721代币余额
+      description: 查询特定用户的ERC721代币（NFT）持有数量
+      tags:
+        - 权重服务
+      parameters:
+        - in: path
+          name: tokenAddress
+          required: true
+          schema:
+            type: string
+          description: ERC721代币合约地址
+        - in: path
+          name: voterAddress
+          required: true
+          schema:
+            type: string
+          description: 用户地址
+        - in: query
+          name: blockNumber
+          schema:
+            type: integer
+          description: 区块高度（可选，默认为最新区块）
+      responses:
+        200:
+          description: 成功返回NFT持有数量
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        400:
+          description: 请求验证失败
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: 服务器内部错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+                
+  # 审计服务接口
+  /api/v1/audit/logs:
+    get:
+      summary: 获取审计日志
+      description: 按条件查询系统审计日志
+      tags:
+        - 审计服务
+      parameters:
+        - in: query
+          name: actionType
+          schema:
+            type: string
+            enum: [proposal_created, vote_cast, proposal_executed, vote_weight_calculated, system_config_changed]
+          description: 操作类型
+        - in: query
+          name: resourceType
+          schema:
+            type: string
+            enum: [proposal, vote, system, weight]
+          description: 资源类型
+        - in: query
+          name: actor
+          schema:
+            type: string
+          description: 操作者地址
+        - in: query
+          name: resourceId
+          schema:
+            type: string
+          description: 资源ID
+        - in: query
+          name: fromDate
+          schema:
+            type: string
+            format: date-time
+          description: 开始日期
+        - in: query
+          name: toDate
+          schema:
+            type: string
+            format: date-time
+          description: 结束日期
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 50
+          description: 返回记录数量限制
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            default: 0
+          description: 分页偏移量
+      responses:
+        200:
+          description: 成功返回审计日志
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        400:
+          description: 请求验证失败
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: 服务器内部错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+                
+  /api/v1/audit/logs/{id}:
+    get:
+      summary: 获取特定审计日志
+      description: 通过ID查询特定审计日志详情
+      tags:
+        - 审计服务
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: 审计日志ID
+      responses:
+        200:
+          description: 成功返回审计日志详情
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        404:
+          description: 审计日志不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: 服务器内部错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+                
+  /api/v1/audit/proposal/{proposalId}:
+    get:
+      summary: 获取提案相关的审计日志
+      description: 查询特定提案的所有审计日志
+      tags:
+        - 审计服务
+      parameters:
+        - in: path
+          name: proposalId
+          required: true
+          schema:
+            type: string
+          description: 提案ID
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 50
+          description: 返回记录数量限制
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            default: 0
+          description: 分页偏移量
+      responses:
+        200:
+          description: 成功返回提案审计日志
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        400:
+          description: 请求验证失败
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: 服务器内部错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+                
+  /api/v1/audit/voter/{voterAddress}:
+    get:
+      summary: 获取投票者相关的审计日志
+      description: 查询特定投票者的所有审计日志
+      tags:
+        - 审计服务
+      parameters:
+        - in: path
+          name: voterAddress
+          required: true
+          schema:
+            type: string
+          description: 投票者地址
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 50
+          description: 返回记录数量限制
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            default: 0
+          description: 分页偏移量
+      responses:
+        200:
+          description: 成功返回投票者审计日志
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        400:
+          description: 请求验证失败
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: 服务器内部错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+                
+  /api/v1/audit/verify/{ipfsHash}:
+    get:
+      summary: 验证IPFS哈希的审计记录
+      description: 验证IPFS上存储的审计记录与数据库记录是否一致
+      tags:
+        - 审计服务
+      parameters:
+        - in: path
+          name: ipfsHash
+          required: true
+          schema:
+            type: string
+          description: IPFS哈希
+      responses:
+        200:
+          description: 成功验证IPFS审计记录
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        400:
+          description: 请求验证失败
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: 服务器内部错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+                
+  # 执行服务接口
+  /api/v1/execute/proposal/{proposalId}:
+    post:
+      summary: 执行提案
+      description: 将提案的投票结果执行到链上
+      tags:
+        - 执行服务
+      security:
+        - web3Signature: []
+      parameters:
+        - in: path
+          name: proposalId
+          required: true
+          schema:
+            type: string
+          description: 提案ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - executor
+                - signature
+              properties:
+                executor:
+                  type: string
+                  description: 执行者地址
+                  example: "0x1234567890123456789012345678901234567890"
+                signature:
+                  type: string
+                  description: 执行者签名
+                  example: "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+                executionParams:
+                  type: object
+                  description: 额外的执行参数
+      responses:
+        200:
+          description: 成功执行提案
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        400:
+          description: 请求验证失败
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        401:
+          description: 身份验证失败
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: 服务器内部错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+                
+  /api/v1/execute/status/{txHash}:
+    get:
+      summary: 获取执行状态
+      description: 查询链上交易的执行状态
+      tags:
+        - 执行服务
+      parameters:
+        - in: path
+          name: txHash
+          required: true
+          schema:
+            type: string
+          description: 交易哈希
+      responses:
+        200:
+          description: 成功返回执行状态
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        400:
+          description: 请求验证失败
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: 服务器内部错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+                
+  /api/v1/execute/strategies:
+    get:
+      summary: 获取可用的执行策略
+      description: 返回系统支持的所有执行策略类型
+      tags:
+        - 执行服务
+      responses:
+        200:
+          description: 成功返回执行策略列表
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        500:
+          description: 服务器内部错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+                
+  /api/v1/execute/simulation:
+    post:
+      summary: 模拟执行
+      description: 模拟执行提案但不提交链上交易
+      tags:
+        - 执行服务
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - proposalId
+              properties:
+                proposalId:
+                  type: string
+                  description: 提案ID
+                  example: "prop-1"
+                executionParams:
+                  type: object
+                  description: 额外的执行参数
+      responses:
+        200:
+          description: 成功模拟执行
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        400:
+          description: 请求验证失败
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        500:
+          description: 服务器内部错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  securitySchemes:
+    web3Signature:
+      type: apiKey
+      in: header
+      name: signature
+      description: 使用Web3钱包生成的签名
+
+  schemas:
+    # 提案模型
+    Proposal:
+      type: object
+      required:
+        - id
+        - title
+        - body
+        - choices
+        - creator
+        - start
+        - end
+        - snapshot
+        - space
+      properties:
+        id:
+          type: string
+          description: 提案唯一标识符
+        title:
+          type: string
+          description: 提案标题
+        body:
+          type: string
+          description: 提案内容描述
+        choices:
+          type: array
+          description: 投票选项
+          items:
+            type: string
+        creator:
+          type: string
+          description: 提案创建者的以太坊地址
+        start:
+          type: string
+          format: date-time
+          description: 投票开始时间
+        end:
+          type: string
+          format: date-time
+          description: 投票结束时间
+        snapshot:
+          type: integer
+          description: 区块快照高度
+        space:
+          type: string
+          description: DAO空间标识符
+        votingSystem:
+          type: string
+          enum: [single-choice, approval, ranked-choice, quadratic, weighted]
+          description: 投票系统类型
+          default: single-choice
+        ipfsHash:
+          type: string
+          description: 完整提案内容的IPFS哈希
+        status:
+          type: string
+          enum: [pending, active, closed, canceled]
+          description: 提案状态
+          default: pending
+        executionStrategy:
+          type: object
+          description: 执行策略配置
+          properties:
+            type:
+              type: string
+              enum: [none, snapshot, thirdweb, custom]
+            data:
+              type: object
+              description: 执行策略参数
+
+    # 提案请求模型
+    ProposalRequest:
+      type: object
+      required:
+        - title
+        - body
+        - choices
+        - creator
+        - start
+        - end
+        - snapshot
+        - space
+        - signature
+      properties:
+        title:
+          type: string
+          description: 提案标题
+        body:
+          type: string
+          description: 提案内容描述
+        choices:
+          type: array
+          description: 投票选项
+          items:
+            type: string
+          minItems: 2
+        creator:
+          type: string
+          description: 提案创建者的以太坊地址
+        start:
+          type: string
+          format: date-time
+          description: 投票开始时间
+        end:
+          type: string
+          format: date-time
+          description: 投票结束时间
+        snapshot:
+          type: integer
+          description: 区块快照高度
+        space:
+          type: string
+          description: DAO空间标识符
+        votingSystem:
+          type: string
+          enum: [single-choice, approval, ranked-choice, quadratic, weighted]
+          description: 投票系统类型
+          default: single-choice
+        signature:
+          type: string
+          description: 创建者的签名
+        executionStrategy:
+          type: object
+          description: 执行策略配置
+          properties:
+            type:
+              type: string
+              enum: [none, snapshot, thirdweb, custom]
+            data:
+              type: object
+              description: 执行策略参数
+    
+    # 投票模型
+    Vote:
+      type: object
+      required:
+        - voter
+        - proposalId
+        - choice
+        - signature
+      properties:
+        voter:
+          type: string
+          description: 投票者的以太坊地址
+        proposalId:
+          type: string
+          description: 提案ID
+        choice:
+          oneOf:
+            - type: integer
+              description: 选择的选项索引（单选）
+            - type: array
+              items:
+                type: integer
+              description: 选择的选项索引数组（多选）
+            - type: object
+              description: 选项权重映射（加权投票）
+        weight:
+          type: number
+          description: 投票权重
+          minimum: 0
+        signature:
+          type: string
+          description: EIP-712签名
+        space:
+          type: string
+          description: DAO空间标识符
+        timestamp:
+          type: integer
+          description: 投票时间戳
+        ipfsHash:
+          type: string
+          description: 投票记录的IPFS哈希
+    
+    # ZK证明模型
+    Proof:
+      type: object
+      required:
+        - proof
+        - publicInputs
+        - circuitId
+      properties:
+        proof:
+          type: object
+          description: ZK证明数据
+        publicInputs:
+          type: array
+          description: 公开输入
+          items:
+            type: string
+        circuitId:
+          type: string
+          description: 电路ID
+    
+    # 错误响应
+    Error:
+      type: object
+      properties:
+        status:
+          type: string
+          description: 状态标识
+          example: error
+        message:
+          type: string
+          description: 错误消息
+        errors:
+          type: array
+          description: 详细错误信息
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+                description: 错误字段
+              message:
+                type: string
+                description: 错误描述
+    
+    # 成功响应
+    Success:
+      type: object
+      properties:
+        status:
+          type: string
+          description: 状态标识
+          example: success
+        message:
+          type: string
+          description: 成功消息
+        data:
+          type: object
+          description: 响应数据 
