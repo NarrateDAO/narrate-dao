@@ -30,12 +30,14 @@
     "joi": "^17.8.3",
     "mongoose": "^7.0.1",
     "morgan": "^1.10.0",
+    "react-router-dom": "^7.6.0",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
     "winston": "^3.8.2",
     "yamljs": "^0.3.0"
   },
   "devDependencies": {
+    "@types/react-router-dom": "^5.3.3",
     "eslint": "^8.35.0",
     "jest": "^29.5.0",
     "nodemon": "^2.0.21",
