@@ -89,12 +89,12 @@ npm run dev
 - `DELETE /api/v1/proposals/:id`: 取消提案
 - `POST /api/v1/proposals/:id/execute`: 执行提案
 
-### ZK API (预留)
+### ZK API
 
-- `GET /api/v1/zk/circuits`: 获取可用的 ZK 电路列表
-- `POST /api/v1/zk/verify`: 验证 ZK 证明
-- `POST /api/v1/zk/identity/verify`: 验证身份证明
-- `POST /api/v1/zk/vote/verify`: 验证匿名投票证明
+- `GET /api/v1/zk/circuits`: 获取可用的 ZK 电路列表。通过扫描 `zk_keys` 目录查找验证密钥文件 (`.vkey.json`) 来检索可用 ZK 电路的列表，返回电路 ID、名称和描述等详细信息。
+- `POST /api/v1/zk/verify`: 验证 ZK 证明。使用 `snarkjs` 验证通用的 ZK 证明，需要验证密钥、公共信号和证明对象。
+- `POST /api/v1/zk/identity/verify`: 验证身份证明。检索 'identity_circuit' 验证密钥，并用其验证提供的证明和公共信号。
+- `POST /api/v1/zk/vote/verify`: 验证匿名投票证明。检索 'anonymous_vote_circuit' 验证密钥，用其验证证明，然后执行占位符资格和重复投票检查。
 
 ## 与现有解决方案的对比
 
@@ -199,12 +199,12 @@ npm run dev
 - `DELETE /api/v1/proposals/:id`: Cancel a proposal
 - `POST /api/v1/proposals/:id/execute`: Execute a proposal
 
-### ZK API (Reserved)
+### ZK API
 
-- `GET /api/v1/zk/circuits`: Get list of available ZK circuits
-- `POST /api/v1/zk/verify`: Verify ZK proof
-- `POST /api/v1/zk/identity/verify`: Verify identity proof
-- `POST /api/v1/zk/vote/verify`: Verify anonymous vote proof
+- `GET /api/v1/zk/circuits`: Retrieves a list of available ZK circuits by scanning the `zk_keys` directory for verification key files (`.vkey.json`). Returns details like circuit ID, name, and description.
+- `POST /api/v1/zk/verify`: Verifies a generic ZK proof using `snarkjs`. Requires the verification key, public signals, and the proof object.
+- `POST /api/v1/zk/identity/verify`: Verifies a ZK identity proof. It retrieves the 'identity_circuit' verification key and uses it to validate the provided proof and public signals.
+- `POST /api/v1/zk/vote/verify`: Verifies a ZK anonymous vote proof. It retrieves the 'anonymous_vote_circuit' verification key and uses it to validate the proof, then performs placeholder eligibility and double-voting checks.
 
 ## Comparison with Existing Solutions
 

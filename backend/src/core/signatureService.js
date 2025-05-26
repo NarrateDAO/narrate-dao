@@ -5,30 +5,41 @@
 const { ethers } = require('ethers');
 
 /**
- * 验证EIP-712签名
- * @param {Object} message - 被签名的消息
- * @param {string} signature - 签名字符串
- * @param {string} address - 签名者的地址
- * @returns {boolean} 签名是否有效
+ * 验证EIP-712签名 (Generic EIP-712 verifier)
+ * This function verifies a signature produced according to the EIP-712 standard.
+ * EIP-712 is a standard for hashing and signing of typed structured data as opposed to just byte strings.
+ *
+ * @param {Object} domain - The EIP-712 domain separator object.
+ *   Typically includes fields like:
+ *   - name: The user readable name of signing domain, i.e. the name of the DApp or platform.
+ *   - version: The current major version of the signing domain.
+ *   - chainId: The EIP-155 chain ID of the network where the contract is deployed.
+ *   - verifyingContract: The address of the contract that will verify the signature.
+ * @param {Object} types - An object describing the structure of the typed data.
+ *   It maps type names to arrays of { name: string, type: string } objects.
+ *   Example: { Person: [{ name: 'name', type: 'string' }, { name: 'wallet', type: 'address' }] }
+ *   The primary type (e.g., 'Mail', 'Permit') must be present as a key in this object.
+ * @param {Object} value - The actual message payload object, conforming to the structure defined in `types`.
+ *   This is the data that was signed by the user.
+ * @param {string} signature - The signature string (e.g., "0x...") produced by the user's wallet.
+ * @param {string} expectedAddress - The Ethereum address of the signer that is expected to have produced the signature.
+ * @returns {Promise<boolean>} True if the signature is valid and matches the expected address, false otherwise.
  */
-const verifySignature = async (message, signature, address) => {
+const verifySignature = async (domain, types, value, signature, expectedAddress) => {
   try {
-    // 使用ethers库验证签名
-    // 注意：这是一个简化的实现，实际应用中需要完整的EIP-712实现
+    // EIP-712 specifies how to encode and hash structured data.
+    // _TypedDataEncoder.hash is the function ethers.js provides to compute the EIP-712 hash.
+    const typedDataHash = ethers.utils._TypedDataEncoder.hash(domain, types, value);
     
-    // 将消息转换为字符串
-    const messageString = typeof message === 'string' 
-      ? message 
-      : JSON.stringify(message);
+    // Recover the address from the signature and the hash.
+    // The recoverAddress function takes the digest (hash) that was signed, and the signature.
+    const recoveredAddress = ethers.utils.recoverAddress(typedDataHash, signature);
     
-    // 对于简单认证，我们可以使用verifyMessage
-    const messageHash = ethers.utils.hashMessage(messageString);
-    const recoveredAddress = ethers.utils.recoverAddress(messageHash, signature);
-    
-    // 检查恢复的地址是否与提供的地址匹配
-    return recoveredAddress.toLowerCase() === address.toLowerCase();
+    // Compare the recovered address with the expected signer's address.
+    // It's good practice to compare them in a case-insensitive manner.
+    return recoveredAddress.toLowerCase() === expectedAddress.toLowerCase();
   } catch (error) {
-    console.error('签名验证失败:', error);
+    console.error('EIP-712 Signature verification failed:', error);
     return false;
   }
 };
